@@ -1,0 +1,133 @@
+import { Link, useSearchParams } from "react-router-dom";
+import { Plus } from "lucide-react";
+import Panel from "../../components/Panel";
+import ReportItem from "../../components/ReportItem";
+import { ButtonLink } from "../../components/ui/Button";
+import Note from "../../components/ui/Note";
+import { ErrorState, Skeleton } from "../../components/ui/States";
+import { Lead, Title } from "../../components/ui/Typography";
+import { useReports } from "../../hooks/useReports";
+import { REPORTS_PAGE_SIZE } from "../../lib/constants";
+import { cn } from "../../lib/format";
+import { parseFilter, REPORT_FILTERS, reportsPath } from "../../lib/reports";
+
+export default function Reports() {
+  const [searchParams] = useSearchParams();
+  const { data: reports, isPending, isError, refetch } = useReports();
+
+  const filter = parseFilter(searchParams.get("status"));
+
+  const matching = (reports ?? []).filter(
+    (report) => filter === "All" || report.status === filter,
+  );
+  const pages = Math.max(1, Math.ceil(matching.length / REPORTS_PAGE_SIZE));
+  const page = Math.min(Math.max(1, Number(searchParams.get("page")) || 1), pages);
+  const visible = matching.slice((page - 1) * REPORTS_PAGE_SIZE, page * REPORTS_PAGE_SIZE);
+
+  return (
+    <>
+      {/* The nav tab already names the screen; the heading is for screen readers. */}
+      <Title srOnly>My reports</Title>
+
+      <ButtonLink to="/reports/new" size="lg" className="mb-3.75">
+        <Plus className="size-4" strokeWidth={2.2} aria-hidden />
+        Report an activity
+      </ButtonLink>
+
+      <div className="flex flex-col gap-2.75">
+        <Panel title="Your observations" aside="Sample records">
+          <div
+            role="group"
+            aria-label="Filter sample reports"
+            className="mt-2.25 mb-0.75 flex flex-wrap gap-1.5"
+          >
+            {REPORT_FILTERS.map((option) => {
+              const active = option === filter;
+
+              return (
+                <Link
+                  key={option}
+                  to={reportsPath(option)}
+                  replace
+                  aria-current={active ? "true" : undefined}
+                  className={cn(
+                    "grid min-h-7.75 place-items-center rounded-full border px-2.25 py-1.5 text-[9px]",
+                    active
+                      ? "border-navy bg-navy text-navy-foreground"
+                      : "border-border bg-background text-subtle",
+                  )}
+                >
+                  {option}
+                </Link>
+              );
+            })}
+          </div>
+
+          {isPending ? (
+            <div className="space-y-2 py-2.75" aria-busy="true" aria-label="Loading your reports">
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+            </div>
+          ) : isError ? (
+            <div className="py-2.75">
+              <ErrorState onRetry={() => void refetch()} />
+            </div>
+          ) : visible.length > 0 ? (
+            <ul>
+              {visible.map((report) => (
+                <ReportItem key={report.id} report={report} />
+              ))}
+            </ul>
+          ) : (
+            <Lead>No sample reports with this status.</Lead>
+          )}
+
+          {pages > 1 && (
+            <nav
+              aria-label="Report pages"
+              className="mt-2 flex items-center justify-between gap-2.5 text-[10px] text-subtle"
+            >
+              <PageLink to={reportsPath(filter, page - 1)} disabled={page === 1}>
+                ← Previous
+              </PageLink>
+              <span aria-current="page">
+                {page} / {pages}
+              </span>
+              <PageLink to={reportsPath(filter, page + 1)} disabled={page === pages}>
+                Next →
+              </PageLink>
+            </nav>
+          )}
+
+          <p className="mt-2.25 text-[8px] leading-[1.7] text-faint">
+            Illustrative records · No live election activity
+          </p>
+        </Panel>
+
+        <ButtonLink variant="secondary" size="sm" to="/area">
+          Your area & report breakdown →
+        </ButtonLink>
+      </div>
+
+      <Note variant="quiet">Stay safe. Report only what you observe.</Note>
+    </>
+  );
+}
+
+/** A pager link that stays in place, greyed out, at either end of the list. */
+function PageLink({ to, disabled, children }: { to: string; disabled: boolean; children: string }) {
+  if (disabled) {
+    return (
+      <span aria-disabled="true" className="py-1.75 text-primary opacity-50">
+        {children}
+      </span>
+    );
+  }
+
+  return (
+    <ButtonLink variant="text" size="sm" to={to} replace>
+      {children}
+    </ButtonLink>
+  );
+}

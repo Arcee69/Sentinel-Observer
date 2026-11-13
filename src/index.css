@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   SMHP Sentinel Connect — observer theme.
+   A calmer, warmer take on the Sentinel palette for community observers.
+   Every colour is a hex token defined once here and read through Tailwind, so
+   a rebrand is an edit to this block.
+--------------------------------------------------------------------------- */
+:root {
+  --background: #f7f9fb;
+  --foreground: #16222c;
+  --surface: #ffffff;
+
+  --primary: #b64a10;
+  --primary-hover: #9f3d09;
+  --primary-foreground: #ffffff;
+  /* Selected options and the active nav item. */
+  --primary-soft: #fff4e9;
+  --primary-strong: #a13c09;
+  /* Dashed upload targets. */
+  --primary-dashed: #d5b79e;
+
+  /* Text, strongest to faintest. */
+  --label: #566571;
+  --muted-foreground: #71808c;
+  --subtle: #8b969f;
+  --faint: #97a1aa;
+
+  --muted: #f0f4f7;
+  --muted-border: #e4e9ed;
+  --track: #e1e7ec;
+  /* The trough behind the Create account / Sign in switch. */
+  --segment: #eaf0f4;
+
+  /* Eyebrow tags and the report icon chip. */
+  --ember: #a36338;
+  --ember-soft: #f9f1e9;
+  --ember-icon: #b78357;
+
+  --navy: #122b40;
+  --navy-foreground: #ffffff;
+  --navy-muted: #afc4d5;
+
+  /* The "preview only" banner. */
+  --notice: #fcf3e8;
+  --notice-border: #f0e4d2;
+  --notice-foreground: #8e7057;
+
+  /* The observation-area card. */
+  --sage: #edf2ec;
+  --sage-border: #e1e7e0;
+  --sage-foreground: #4c6445;
+  --sage-muted: #7c9274;
+
+  --destructive: #a93623;
+  --success: #4c7650;
+  --success-soft: #e9f3e9;
+
+  /* Report statuses: pill text, pill fill, breakdown bar. */
+  --reviewed: #69835f;
+  --reviewed-soft: #edf5ec;
+  --reviewed-bar: #92a984;
+  --in-review: #b58344;
+  --in-review-soft: #fff4e4;
+  --in-review-bar: #dab47d;
+  --needs-info: #b97145;
+  --needs-info-soft: #fcebe2;
+  --needs-info-bar: #c78360;
+  --draft: #788da9;
+  --draft-soft: #edf1f8;
+  --draft-bar: #95a5bc;
+
+  --border: #e0e6eb;
+  --input: #e0e6eb;
+  --ring: #dc9e75;
+
+  --console: #0b1218;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-dashed: var(--primary-dashed);
+
+  --color-label: var(--label);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle: var(--subtle);
+  --color-faint: var(--faint);
+
+  --color-muted: var(--muted);
+  --color-muted-border: var(--muted-border);
+  --color-track: var(--track);
+  --color-segment: var(--segment);
+
+  --color-ember: var(--ember);
+  --color-ember-soft: var(--ember-soft);
+  --color-ember-icon: var(--ember-icon);
+
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-navy-muted: var(--navy-muted);
+
+  --color-notice: var(--notice);
+  --color-notice-border: var(--notice-border);
+  --color-notice-foreground: var(--notice-foreground);
+
+  --color-sage: var(--sage);
+  --color-sage-border: var(--sage-border);
+  --color-sage-foreground: var(--sage-foreground);
+  --color-sage-muted: var(--sage-muted);
+
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+
+  --color-reviewed: var(--reviewed);
+  --color-reviewed-soft: var(--reviewed-soft);
+  --color-reviewed-bar: var(--reviewed-bar);
+  --color-in-review: var(--in-review);
+  --color-in-review-soft: var(--in-review-soft);
+  --color-in-review-bar: var(--in-review-bar);
+  --color-needs-info: var(--needs-info);
+  --color-needs-info-soft: var(--needs-info-soft);
+  --color-needs-info-bar: var(--needs-info-bar);
+  --color-draft: var(--draft);
+  --color-draft-soft: var(--draft-soft);
+  --color-draft-bar: var(--draft-bar);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-console: var(--console);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Controls and buttons / cards and panels. */
+  --radius-control: 9px;
+  --radius-card: 13px;
+
+  /* Above this the app is drawn as a handset against the console backdrop. */
+  --breakpoint-frame: 481px;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+
+  button:not(:disabled),
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .safe-top {
+    padding-top: max(0.625rem, env(safe-area-inset-top));
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Each screen settles in as it replaces the last one. */
+@keyframes arrive {
+  from {
+    opacity: 0.65;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.arrive {
+  animation: arrive 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrive {
+    animation: none;
+  }
+}
