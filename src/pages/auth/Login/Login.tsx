@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useFormik } from "formik";
+import { useSearchParams } from "react-router-dom";
 import * as Yup from "yup";
 import AuthTabs from "../../../components/AuthTabs";
 import PhoneField from "../../../components/PhoneField";
@@ -18,7 +19,11 @@ const schema = Yup.object({
 
 export default function Login() {
   const { signIn } = useAuth();
-  const [formError, setFormError] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  // The API instance sends an observer here with `?expired=1` when their token is rejected.
+  const [formError, setFormError] = useState<string | null>(
+    searchParams.has("expired") ? "Your session has ended. Sign in again." : null,
+  );
 
   const formik = useFormik({
     initialValues: { phone: "", password: "" },

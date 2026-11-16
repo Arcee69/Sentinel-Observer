@@ -98,7 +98,7 @@ export default function VideoPicker({
       )}
 
       <p className="mt-1.25 text-[9px] leading-[1.7] text-subtle">
-        Preview only · Nothing is uploaded.
+        Attachments stay private until they have been checked.
       </p>
     </div>
   );

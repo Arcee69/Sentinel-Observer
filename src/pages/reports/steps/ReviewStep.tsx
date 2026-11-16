@@ -5,16 +5,16 @@ import Button, { ButtonLink } from "../../../components/ui/Button";
 import { Caption, Eyebrow, Lead, Title } from "../../../components/ui/Typography";
 import VideoPreview from "../../../components/VideoPreview";
 import { useDraft } from "../../../context/draft";
-import { useSaveReport } from "../../../hooks/useReports";
-import { LIMITS } from "../../../lib/constants";
+import { useSubmitReport } from "../../../hooks/useReports";
+import { activityName, LIMITS } from "../../../lib/constants";
 import { formatObservedAt } from "../../../lib/format";
 import { REPORT_STEPS, reportStepPath } from "../../../lib/reports";
 import { errorMessage } from "../../../services/instance";
 
-/** Step 4: everything the observer entered, to confirm before saving. */
+/** Step 4: everything the observer entered, to confirm before it is sent. */
 export default function ReviewStep() {
   const { draft, photo, video } = useDraft();
-  const save = useSaveReport();
+  const report = useSubmitReport();
   const navigate = useNavigate();
 
   // The wizard only renders this step once the earlier ones are answered.
@@ -25,11 +25,20 @@ export default function ReviewStep() {
 
   const submit = async () => {
     try {
-      await save.mutateAsync({ category, location, hasVideo: video !== null });
+      await report.mutateAsync({
+        category,
+        location: location.trim(),
+        details: details.trim(),
+        // The picker's value is local time; the API wants the instant.
+        observedAt: new Date(draft.when ?? "").toISOString(),
+        photo: photo?.file ?? null,
+        video: video?.file ?? null,
+      });
       // The confirmation screen clears the draft once it has taken over.
       navigate("/reports/saved", { replace: true, state: { saved: true } });
     } catch (error) {
-      toast.error(errorMessage(error, "We couldn't save your report. Try again."));
+      // Whatever did reach the server is kept, so trying again carries on from there.
+      toast.error(errorMessage(error, "We couldn't send your report. Try again."));
     }
   };
 
@@ -39,11 +48,11 @@ export default function ReviewStep() {
         Report · Step {REPORT_STEPS} of {REPORT_STEPS}
       </Eyebrow>
       <Title>Ready to review?</Title>
-      <Lead>Confirm the details before saving your demo.</Lead>
+      <Lead>Confirm the details before you send your report.</Lead>
 
       <div className="mt-3.25 rounded-card border border-border bg-surface p-3.5 wrap-anywhere">
         <Caption className="mb-1.25">Activity</Caption>
-        <strong>{category}</strong>
+        <strong>{activityName(category)}</strong>
         <hr className="my-4 border-border" />
 
         <Row label="Location">{location}</Row>
@@ -71,7 +80,7 @@ export default function ReviewStep() {
                 alt=""
                 className="size-11 shrink-0 rounded-lg border border-border object-cover"
               />
-              <span className="min-w-0">{photo.file.name} · Preview only</span>
+              <span className="min-w-0">{photo.file.name}</span>
             </span>
           </Row>
         )}
@@ -84,15 +93,19 @@ export default function ReviewStep() {
         )}
       </div>
 
-      <Button onClick={() => void submit()} loading={save.isPending} className="mt-3">
-        Save demo report
+      <Button onClick={() => void submit()} loading={report.isPending} className="mt-3">
+        {!report.isPending
+          ? "Submit report"
+          : report.uploaded === null
+            ? "Sending…"
+            : `Uploading… ${report.uploaded}%`}
       </Button>
       <ButtonLink variant="secondary" to={reportStepPath(2)} className="mt-2.5">
         Edit observation
       </ButtonLink>
 
       <p className="mt-2.5 text-center text-[11px] text-subtle">
-        Nothing will be sent to the Sentinel team in this preview.
+        Your report goes to the Sentinel team for review.
       </p>
     </>
   );

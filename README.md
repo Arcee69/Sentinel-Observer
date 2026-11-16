@@ -4,10 +4,9 @@ Installable app for community observers: create an account, set the area you
 report from, file an activity report with an optional photo and short video, and
 follow your reports through review.
 
-**This build is a preview.** No account is created and no report leaves the
-device — every screen says so in its banner. The data comes from
-[`observerService.ts`](src/services/observerService.ts), which is the one file to
-change when the observer endpoints exist.
+The app talks to the Sentinel API's observer endpoints through
+[`observerService.ts`](src/services/observerService.ts): accounts, areas and
+reports are real, and a submitted report goes to the Sentinel team for review.
 
 Sibling of the agent app (`Sentinel-Web`): same stack, same folder layout, same
 dependency list. Unlike the agent app, **observers register themselves** — no
@@ -21,8 +20,9 @@ cp .env.example .env
 npm run dev
 ```
 
-No credentials are needed. Any valid Nigerian mobile number signs in, or tap
-
+Create an account on the sign-up screen, or sign in with an existing observer
+account. The API only answers origins it allows; `http://localhost:5173` (the
+Vite dev server) is one of them.
 
 | Command | Purpose |
 | --- | --- |
@@ -33,7 +33,7 @@ No credentials are needed. Any valid Nigerian mobile number signs in, or tap
 
 | Variable | Purpose |
 | --- | --- |
-| `VITE_API_BASE_URL` | Sentinel API base URL. Read by the axios instance; nothing calls it yet. |
+| `VITE_API_BASE_URL` | Sentinel API base URL, including `/api/v1`. |
 | `VITE_LANDING_URL` | Where the header's **← Home** link goes. |
 
 ## Screens
@@ -41,13 +41,14 @@ No credentials are needed. Any valid Nigerian mobile number signs in, or tap
 | Route | Screen |
 | --- | --- |
 | `/signup` | Create account, step 1 — name, mobile number, password |
-| `/signup/area` | Create account, step 2 — state, LGA, ward/community |
+| `/signup/area` | Create account, step 2 — state, LGA, optional ward and community |
 | `/login` | Sign in |
-| `/forgot-password` | Password recovery (preview: sends nothing) |
+| `/forgot-password` | Password recovery, step 1 — request a code by text |
+| `/reset-password` | Password recovery, step 2 — the code and a new password |
 | `/app` | Dashboard — counts by status, most recent report |
 | `/reports` | My reports — filter and page are in the URL (`?status=&page=`) |
 | `/reports/new` | Report wizard — activity → details → evidence → review (`?step=`) |
-| `/reports/saved` | Confirmation after saving |
+| `/reports/saved` | Confirmation after submitting |
 | `/area` | Observation area and report breakdown by status |
 | `/area/edit` | Change area |
 
@@ -56,35 +57,50 @@ the device — or the link ends in `#login` — the app opens on **Sign in**.
 
 ## How it works
 
-- **Session.** The observer's name, number and area are kept in `localStorage`
-  so the installed app reopens on the dashboard. The password is validated on
-  the form and then dropped; it is never stored or passed on.
-- **Reports.** Eight sample records plus anything saved this session, held in
-  memory in `observerService.ts`. Signing out resets them, so the next person on
-  the device starts clean. Screens read them through React Query
+- **API layer.** [`api.ts`](src/services/api.ts) holds the endpoint paths,
+  [`requests.ts`](src/services/requests.ts) the typed helpers over the
+  `{success, message, data, meta}` envelope, and
+  [`errors.ts`](src/services/errors.ts) turns every failure into one `ApiError`.
+  [`observerService.ts`](src/services/observerService.ts) is the only file
+  screens call; it maps API shapes into the display types in
+  [`types.ts`](src/lib/types.ts).
+- **Session.** Register and login return a bearer token (valid for a day) and
+  the observer's profile. Both are kept in `localStorage` so the installed app
+  reopens on the dashboard; the password is never stored. The profile is
+  re-read from `/observer/me` when the API is reachable. A rejected token
+  clears the session and returns to Sign in.
+- **Sign-up.** Step 1 collects name, number and password and holds them in
+  memory; step 2 picks the area and creates the account in one call. A number
+  already in use sends the observer back to step 1 with the API's message.
+- **Areas.** States, LGAs and wards come from `/observer/areas`, each list
+  being the children of the choice above it
+  ([`useAreas.ts`](src/hooks/useAreas.ts)). Names arrive in capitals and are
+  shown in reading case.
+- **Reports.** The dashboard and the area screen read `/observer/dashboard`;
+  My reports is filtered and paged by the API
   ([`useReports.ts`](src/hooks/useReports.ts)).
+- **Filing a report.** Three calls, as the API expects: save a private draft,
+  upload the photo and clip to it, then send it for review. Each finished step
+  is remembered in the draft, so pressing submit again after a dropped
+  connection resumes instead of filing twice. Nothing reaches the review queue
+  until the last call.
 - **Report draft.** The wizard's answers and attachments live in
   [`DraftContext`](src/context/DraftContext.tsx), above the screens, so leaving
   the wizard for the dashboard and coming back loses nothing. The step is in the
   URL so the device's back button walks back through it; a deep link can't skip
   past unanswered steps.
-- **Evidence.** One photo (image, up to 10 MB) and one clip (MP4/MOV/WebM, up to
-  20 MB and 30 seconds). The clip's length is read from its metadata in the
-  browser before it is accepted ([`media.ts`](src/lib/media.ts)). Nothing is
-  uploaded.
+- **Evidence.** One photo (JPEG, PNG or WebP, up to 10 MB) and one clip
+  (MP4/MOV/WebM, up to 20 MB and 30 seconds). The clip's length is read from its
+  metadata in the browser before it is accepted
+  ([`media.ts`](src/lib/media.ts)); the server checks both again. Attachments
+  stay private until they are scanned and approved.
 
-### Connecting the API
+### Not built yet
 
-1. Replace the function bodies in `observerService.ts` with calls through
-   [`instance.ts`](src/services/instance.ts). They are already async and return
-   the display types in [`types.ts`](src/lib/types.ts), so screens and hooks
-   don't change.
-2. Carry the password from sign-up step 1 to wherever the account is created —
-   today `Signup.tsx` deliberately discards it.
-3. Add the token to `Session` and attach it in `instance.ts`, as the agent app
-   does.
-4. Remove `PreviewBanner` and the "demo" wording on the review and confirmation
-   screens.
+- Opening a single report, or answering one marked **Needs information** — the
+  list shows the reviewer's note, but there is no edit screen.
+- Finishing a draft left behind by an abandoned submission.
+- Downloading an approved attachment.
 
 ## PWA
 
@@ -94,7 +110,9 @@ the cached shell), cache-first for hashed assets and fonts, and never caches
 `/api/` calls. Manifest, icons and shortcuts are in [`public/`](public/).
 
 The service worker is disabled in dev; use `npm run build && npm run preview` to
-test install and offline launch.
+test install and offline launch. The API's CORS list doesn't include the preview
+server's default port, so run it on the dev port to sign in:
+`npm run preview -- --port 5173`.
 
 ## Structure
 
@@ -102,12 +120,12 @@ test install and offline launch.
 src/
   components/    UI primitives (ui/), pickers, AreaForm, BottomNav, InstallPrompt
   context/       auth / report draft — hooks in .ts, providers in .tsx
-  hooks/         reports query + save, video selection
+  hooks/         reports, areas, API metadata, video selection
   layout/        PhoneFrame, Screen, AuthLayout, AppLayout
   lib/           types, constants, formatting, validation, media checks
   pages/         auth · home · reports · area
   routers/       route table and the protected/public gates
-  services/      observerService, session, axios instance, mock data
+  services/      observerService, endpoint map, request helpers, errors, session
 ```
 
 ## Notes

@@ -5,7 +5,7 @@ import { ButtonLink } from "../../components/ui/Button";
 import { Eyebrow, Lead, Title } from "../../components/ui/Typography";
 import { useDraft } from "../../context/draft";
 
-/** Confirmation after the wizard saves. Only reachable from a save. */
+/** Confirmation after the wizard submits. Only reachable from a submission. */
 export default function ReportSaved() {
   const { state } = useLocation();
   const { reset } = useDraft();
@@ -25,11 +25,10 @@ export default function ReportSaved() {
         <Check className="size-7" strokeWidth={2} aria-hidden />
       </div>
 
-      <Eyebrow>Preview complete</Eyebrow>
-      <Title>Your demo report is ready.</Title>
+      <Eyebrow>Report sent</Eyebrow>
+      <Title>Your report is in review.</Title>
       <Lead>
-        Added to your dashboard as a demo draft for this session. Nothing has been submitted to
-        the Sentinel team.
+        The Sentinel team has it now. You can follow its status from your dashboard.
       </Lead>
 
       <ButtonLink to="/app" replace>

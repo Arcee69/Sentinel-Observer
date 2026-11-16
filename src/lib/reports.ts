@@ -1,13 +1,9 @@
 import { REPORT_STATUSES } from "./constants";
-import type { ObserverReport, ReportDraft, ReportStatus } from "./types";
+import type { ReportDraft, ReportStatus } from "./types";
 
 export type ReportFilter = "All" | ReportStatus;
 
 export const REPORT_FILTERS: ReportFilter[] = ["All", ...REPORT_STATUSES];
-
-export function countByStatus(reports: ObserverReport[], status: ReportStatus): number {
-  return reports.filter((report) => report.status === status).length;
-}
 
 /**
  * Link to My reports with a filter and page applied. Both live in the URL, so

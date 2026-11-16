@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
 import Panel from "../../components/Panel";
 import ReportItem from "../../components/ReportItem";
@@ -7,22 +7,21 @@ import Note from "../../components/ui/Note";
 import { ErrorState, Skeleton } from "../../components/ui/States";
 import { Lead, Title } from "../../components/ui/Typography";
 import { useReports } from "../../hooks/useReports";
-import { REPORTS_PAGE_SIZE } from "../../lib/constants";
 import { cn } from "../../lib/format";
 import { parseFilter, REPORT_FILTERS, reportsPath } from "../../lib/reports";
 
 export default function Reports() {
   const [searchParams] = useSearchParams();
-  const { data: reports, isPending, isError, refetch } = useReports();
-
+  // The API filters and pages the list; both come from the URL.
   const filter = parseFilter(searchParams.get("status"));
+  const page = Math.max(1, Math.trunc(Number(searchParams.get("page"))) || 1);
 
-  const matching = (reports ?? []).filter(
-    (report) => filter === "All" || report.status === filter,
-  );
-  const pages = Math.max(1, Math.ceil(matching.length / REPORTS_PAGE_SIZE));
-  const page = Math.min(Math.max(1, Number(searchParams.get("page")) || 1), pages);
-  const visible = matching.slice((page - 1) * REPORTS_PAGE_SIZE, page * REPORTS_PAGE_SIZE);
+  const { data, isPending, isError, refetch } = useReports(filter, page);
+  const visible = data?.reports ?? [];
+  const pages = data?.pages ?? 1;
+
+  // A stale link can point past the last page.
+  if (data && page > data.pages) return <Navigate to={reportsPath(filter, data.pages)} replace />;
 
   return (
     <>
@@ -35,10 +34,10 @@ export default function Reports() {
       </ButtonLink>
 
       <div className="flex flex-col gap-2.75">
-        <Panel title="Your observations" aside="Sample records">
+        <Panel title="Your observations" aside={data ? `${data.total} in this view` : undefined}>
           <div
             role="group"
-            aria-label="Filter sample reports"
+            aria-label="Filter reports by status"
             className="mt-2.25 mb-0.75 flex flex-wrap gap-1.5"
           >
             {REPORT_FILTERS.map((option) => {
@@ -80,7 +79,7 @@ export default function Reports() {
               ))}
             </ul>
           ) : (
-            <Lead>No sample reports with this status.</Lead>
+            <Lead>{filter === "All" ? "No reports yet." : "No reports with this status."}</Lead>
           )}
 
           {pages > 1 && (
@@ -100,9 +99,6 @@ export default function Reports() {
             </nav>
           )}
 
-          <p className="mt-2.25 text-[8px] leading-[1.7] text-faint">
-            Illustrative records · No live election activity
-          </p>
         </Panel>
 
         <ButtonLink variant="secondary" size="sm" to="/area">

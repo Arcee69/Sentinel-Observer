@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 interface PanelProps {
   title: string;
-  /** Right of the title: an action, or a small qualifier such as "Sample records". */
+  /** Right of the title: an action, or a small qualifier such as "12 in this view". */
   aside?: ReactNode;
   children: ReactNode;
 }

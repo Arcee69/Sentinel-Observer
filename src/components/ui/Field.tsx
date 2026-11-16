@@ -197,16 +197,23 @@ export function TextAreaField({
 
 /* -------------------------------------------------------------------------- */
 
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
 interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "id"> {
   label: string;
+  qualifier?: string;
   hint?: string;
   error?: string;
-  options: readonly string[];
+  options: readonly SelectOption[];
   placeholder?: string;
 }
 
 export function SelectField({
   label,
+  qualifier,
   hint,
   error,
   options,
@@ -215,7 +222,7 @@ export function SelectField({
   ...rest
 }: SelectProps) {
   return (
-    <Field label={label} hint={hint} error={error}>
+    <Field label={label} qualifier={qualifier} hint={hint} error={error}>
       {({ id, invalid, describedBy }) => (
         <select
           {...rest}
@@ -237,8 +244,8 @@ export function SelectField({
         >
           {placeholder && <option value="">{placeholder}</option>}
           {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
+            <option key={option.value} value={option.value}>
+              {option.label}
             </option>
           ))}
         </select>

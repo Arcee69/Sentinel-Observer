@@ -1,6 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import PreviewBanner from "../components/PreviewBanner";
 
 /**
  * The scrolling region between the header and whatever is pinned below it.
@@ -22,7 +21,6 @@ export default function Screen({ footer }: { footer?: ReactNode }) {
   return (
     <div ref={scroller} className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto">
       <main key={key} className="arrive min-w-0 flex-1 px-5 pt-3.75 pb-4.5">
-        <PreviewBanner />
         <Outlet />
       </main>
       {footer}

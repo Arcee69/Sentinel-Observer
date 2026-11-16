@@ -20,7 +20,7 @@ export default function ActivityPicker({ name, value, onChange, error }: Activit
       >
         <legend className="mb-1.75 text-[11px] font-semibold text-label">Activity</legend>
 
-        {ACTIVITIES.map(({ value: option, label, Icon }) => (
+        {ACTIVITIES.map(({ code: option, label, Icon }) => (
           <label
             key={option}
             className={

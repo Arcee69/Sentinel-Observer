@@ -1,20 +1,19 @@
 import { createContext, useContext } from "react";
-import type { Credentials, Observer, ObserverArea, SignupDetails } from "../lib/types";
+import type { AreaSelection, Credentials, Observer, SignupDetails } from "../lib/types";
 
 export interface AuthValue {
   observer: Observer | null;
   isAuthenticated: boolean;
   /** Someone has used the app on this device — open on Sign in, not Create account. */
   returning: boolean;
-  /** Step one of sign-up, kept while the observer sets their area. */
+  /** Step one of sign-up, kept in memory while the observer sets their area. */
   pendingSignup: SignupDetails | null;
   beginSignup: (details: SignupDetails) => void;
-  completeSignup: (area: ObserverArea) => Promise<void>;
+  /** Creates the account from step one plus the area, and signs it in. */
+  completeSignup: (area: AreaSelection) => Promise<void>;
   signIn: (credentials: Credentials) => Promise<void>;
-  /** Opens the dashboard as a demo observer, without an account. */
-  explore: () => void;
   signOut: () => void;
-  updateArea: (area: ObserverArea) => void;
+  updateArea: (area: AreaSelection) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthValue | null>(null);

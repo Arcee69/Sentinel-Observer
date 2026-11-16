@@ -1,5 +1,10 @@
 import { createContext, useContext } from "react";
-import type { PhotoAttachment, ReportDraft, VideoAttachment } from "../lib/types";
+import type {
+  PhotoAttachment,
+  ReportDraft,
+  SubmissionProgress,
+  VideoAttachment,
+} from "../lib/types";
 
 export interface DraftValue {
   draft: ReportDraft;
@@ -9,7 +14,13 @@ export interface DraftValue {
   /** Replaces the attachment; the previous one's object URL is released. */
   setPhoto: (photo: PhotoAttachment | null) => void;
   setVideo: (video: VideoAttachment | null) => void;
-  /** Clears the fields and releases both attachments. */
+  /**
+   * How much of this report the server already holds after a failed attempt.
+   * Read when submitting, never rendered.
+   */
+  getSubmission: () => SubmissionProgress | null;
+  setSubmission: (progress: SubmissionProgress | null) => void;
+  /** Clears the fields and the submission progress, and releases both attachments. */
   reset: () => void;
 }
 

@@ -6,6 +6,7 @@ import Area from "../pages/area/Area";
 import EditArea from "../pages/area/EditArea";
 import ForgotPassword from "../pages/auth/ForgotPassword/ForgotPassword";
 import Login from "../pages/auth/Login/Login";
+import ResetPassword from "../pages/auth/ResetPassword/ResetPassword";
 import SetupArea from "../pages/auth/Signup/SetupArea";
 import Signup from "../pages/auth/Signup/Signup";
 import Home from "../pages/home/Home";
@@ -23,6 +24,7 @@ export default function Routers() {
           <Route path="/signup/area" element={<SetupArea />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
       </Route>
 

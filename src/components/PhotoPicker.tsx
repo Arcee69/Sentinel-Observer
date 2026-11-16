@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 import { Image, Plus } from "lucide-react";
 import Button from "./ui/Button";
 import { useDraft } from "../context/draft";
-import { attachPhoto } from "../lib/media";
+import { attachPhoto, PHOTO_TYPES } from "../lib/media";
 
 /** Optional single photo for the report — picked from the gallery or camera. */
 export default function PhotoPicker() {
@@ -38,7 +38,7 @@ export default function PhotoPicker() {
       <input
         id={inputId}
         type="file"
-        accept="image/*"
+        accept={PHOTO_TYPES.join(",")}
         className="sr-only"
         onChange={(event) => {
           choose(event.target.files?.[0]);

@@ -12,9 +12,15 @@ const VIDEO_EXTENSION = /\.(mp4|mov|webm)$/i;
 /** How long to wait for a clip's metadata before giving up on it. */
 const METADATA_TIMEOUT_MS = 10_000;
 
+/** The photo formats the API accepts — also the file input's `accept`. */
+export const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
 export function attachPhoto(file: File): PhotoAttachment {
-  if (file.size > LIMITS.photoBytes || !file.type.startsWith("image/")) {
-    throw new Error("Choose an image up to 10 MB.");
+  if (!PHOTO_TYPES.includes(file.type)) {
+    throw new Error("Choose a JPEG, PNG or WebP photo.");
+  }
+  if (file.size > LIMITS.photoBytes) {
+    throw new Error("This photo is larger than 10 MB. Choose a smaller one.");
   }
 
   return { file, url: URL.createObjectURL(file) };

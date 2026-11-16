@@ -9,12 +9,12 @@ import Note from "../../../components/ui/Note";
 import { Eyebrow, Lead, Title } from "../../../components/ui/Typography";
 import { useAuth } from "../../../context/auth";
 import { LIMITS } from "../../../lib/constants";
-import { phoneSchema } from "../../../lib/validation";
+import { PASSWORD_HINT, passwordSchema, phoneSchema } from "../../../lib/validation";
 
 const schema = Yup.object({
   name: Yup.string().trim().required("Please enter your name.").max(LIMITS.name),
   phone: phoneSchema,
-  password: Yup.string().required("Choose a password").min(8, "Use at least 8 characters"),
+  password: passwordSchema,
 });
 
 /** Step one of two: who the observer is. The area step completes the account. */
@@ -31,8 +31,8 @@ export default function Signup() {
     },
     validationSchema: schema,
     onSubmit: (values) => {
-      // The preview creates no account, so the password stops here.
-      beginSignup({ name: values.name.trim(), phone: values.phone });
+      // Held in memory only: the area step sends it with the rest of the account.
+      beginSignup({ name: values.name.trim(), phone: values.phone, password: values.password });
       navigate("/signup/area");
     },
   });
@@ -72,7 +72,8 @@ export default function Signup() {
           label="Password"
           name="password"
           autoComplete="new-password"
-          placeholder="At least 8 characters"
+          placeholder="Choose a strong password"
+          hint={PASSWORD_HINT}
           value={formik.values.password}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}

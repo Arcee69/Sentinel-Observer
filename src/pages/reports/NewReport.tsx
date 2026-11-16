@@ -1,7 +1,8 @@
-import { useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import StepProgress from "../../components/StepProgress";
 import { ButtonLink } from "../../components/ui/Button";
 import { Eyebrow, Lead, Title } from "../../components/ui/Typography";
+import { useObserver } from "../../context/auth";
 import { useDraft } from "../../context/draft";
 import { furthestStep, REPORT_STEPS, reportStepPath } from "../../lib/reports";
 import ActivityStep from "./steps/ActivityStep";
@@ -23,6 +24,10 @@ const HEADINGS = [
 export default function NewReport() {
   const [searchParams] = useSearchParams();
   const { draft } = useDraft();
+  const observer = useObserver();
+
+  // The API takes reports only from observers who have set their area.
+  if (observer.areaSetupRequired) return <Navigate to="/area/edit" replace />;
 
   // A deep link or a stale history entry can't skip past unanswered steps.
   const requested = Math.trunc(Number(searchParams.get("step"))) || 1;

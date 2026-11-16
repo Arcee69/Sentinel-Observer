@@ -21,6 +21,12 @@ export default function ReportItem({ report }: { report: ObserverReport }) {
       <Badge tone={STATUS_STYLES[report.status].pill} className="col-start-2 justify-self-start">
         {report.status}
       </Badge>
+
+      {report.reviewNotes && (
+        <p className="col-start-2 text-[9px] leading-normal wrap-anywhere text-muted-foreground">
+          Reviewer’s note: {report.reviewNotes}
+        </p>
+      )}
     </li>
   );
 }

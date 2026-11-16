@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DraftContext, type DraftValue } from "./draft";
-import type { PhotoAttachment, ReportDraft, VideoAttachment } from "../lib/types";
+import type {
+  PhotoAttachment,
+  ReportDraft,
+  SubmissionProgress,
+  VideoAttachment,
+} from "../lib/types";
 
 /**
  * Holds the in-progress report above the wizard, so switching to the dashboard
@@ -17,6 +22,12 @@ export function DraftProvider({ children }: { children: ReactNode }) {
     photo: null,
     video: null,
   });
+
+  const submission = useRef<SubmissionProgress | null>(null);
+  const getSubmission = useCallback(() => submission.current, []);
+  const setSubmission = useCallback((progress: SubmissionProgress | null) => {
+    submission.current = progress;
+  }, []);
 
   const swap = useCallback((slot: "photo" | "video", next: string | null) => {
     const previous = urls.current[slot];
@@ -48,6 +59,7 @@ export function DraftProvider({ children }: { children: ReactNode }) {
     setDraft({});
     setPhoto(null);
     setVideo(null);
+    submission.current = null;
   }, [setPhoto, setVideo]);
 
   useEffect(() => {
@@ -59,8 +71,18 @@ export function DraftProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<DraftValue>(
-    () => ({ draft, photo, video, update, setPhoto, setVideo, reset }),
-    [draft, photo, video, update, setPhoto, setVideo, reset],
+    () => ({
+      draft,
+      photo,
+      video,
+      update,
+      setPhoto,
+      setVideo,
+      getSubmission,
+      setSubmission,
+      reset,
+    }),
+    [draft, photo, video, update, setPhoto, setVideo, getSubmission, setSubmission, reset],
   );
 
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;

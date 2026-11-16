@@ -41,7 +41,7 @@
   --navy-foreground: #ffffff;
   --navy-muted: #afc4d5;
 
-  /* The "preview only" banner. */
+  /* Notice surfaces, such as the install prompt. */
   --notice: #fcf3e8;
   --notice-border: #f0e4d2;
   --notice-foreground: #8e7057;

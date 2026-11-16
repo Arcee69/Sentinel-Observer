@@ -1,13 +1,14 @@
-import axios, { isAxiosError } from "axios";
+import axios from "axios";
+import { toApiError } from "./errors";
+import { clearSession, getToken } from "./session";
 
-/**
- * Axios instance for the Sentinel API. Nothing calls it yet — the preview
- * build's data lives in `observerService.ts` — but it is configured the same
- * way as the agent app's, ready for the observer endpoints.
- */
+export { errorMessage } from "./errors";
+
+/** Axios instance for the Sentinel API, configured the same way as the agent app's. */
 const apiInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL?.trim() ?? "",
-  // Field connections are slow; fail visibly rather than hang forever.
+  // Field connections are slow; fail visibly rather than hang forever. Uploads
+  // override this per request.
   timeout: 60_000,
   headers: {
     Accept: "application/json",
@@ -15,12 +16,42 @@ const apiInstance = axios.create({
   },
 });
 
-/** The message to show for a failed call: the API's own wording when it sent one. */
-export function errorMessage(error: unknown, fallback: string): string {
-  if (isAxiosError<{ message?: string }>(error)) {
-    return error.response?.data?.message || fallback;
+/** Attaches the bearer token held in the persisted session. */
+apiInstance.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return error instanceof Error && error.message ? error.message : fallback;
-}
+
+  // Let the browser set the multipart boundary for media uploads.
+  if (config.data instanceof FormData) {
+    config.headers.delete("Content-Type");
+  }
+
+  return config;
+});
+
+/** A rejected token means the session is gone — bounce to login. */
+apiInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const apiError = toApiError(error);
+
+    // Only a 401 for the session's own token ends the session. A sign-in or
+    // sign-up attempt carries none, so wrong credentials stay an ordinary error.
+    const token = getToken();
+    const sentSessionToken =
+      token !== null && error?.config?.headers?.Authorization === `Bearer ${token}`;
+
+    if (apiError.isUnauthorized && sentSessionToken) {
+      clearSession();
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.assign("/login?expired=1");
+      }
+    }
+
+    return Promise.reject(apiError);
+  },
+);
 
 export default apiInstance;

@@ -7,13 +7,13 @@ import Note from "../../components/ui/Note";
 import { ErrorState, Skeleton } from "../../components/ui/States";
 import { Eyebrow, Lead, Title } from "../../components/ui/Typography";
 import { useObserver } from "../../context/auth";
-import { useReports } from "../../hooks/useReports";
+import { useDashboard } from "../../hooks/useReports";
 import { firstName } from "../../lib/format";
-import { countByStatus, reportsPath } from "../../lib/reports";
+import { reportsPath } from "../../lib/reports";
 
 export default function Home() {
   const observer = useObserver();
-  const { data: reports, isPending, isError, refetch } = useReports();
+  const { data: dashboard, isPending, isError, refetch } = useDashboard();
 
   return (
     <>
@@ -44,25 +44,25 @@ export default function Home() {
             <StatTile
               featured
               label="All reports"
-              value={reports.length}
+              value={dashboard.total}
               Icon={FileText}
               to={reportsPath("All")}
             />
             <StatTile
               label="In review"
-              value={countByStatus(reports, "In review")}
+              value={dashboard.counts["In review"]}
               Icon={Clock}
               to={reportsPath("In review")}
             />
             <StatTile
               label="Reviewed"
-              value={countByStatus(reports, "Reviewed")}
+              value={dashboard.counts.Reviewed}
               Icon={CircleCheck}
               to={reportsPath("Reviewed")}
             />
             <StatTile
               label="Needs information"
-              value={countByStatus(reports, "Needs information")}
+              value={dashboard.counts["Needs information"]}
               Icon={CircleAlert}
               to={reportsPath("Needs information")}
             />
@@ -77,16 +77,13 @@ export default function Home() {
                 </ButtonLink>
               }
             >
-              {reports.length > 0 ? (
+              {dashboard.recent.length > 0 ? (
                 <ul>
-                  <ReportItem report={reports[0]} />
+                  <ReportItem report={dashboard.recent[0]} />
                 </ul>
               ) : (
                 <Lead>No reports yet.</Lead>
               )}
-              <p className="mt-2.25 text-[8px] leading-[1.7] text-faint">
-                Illustrative records · No live election activity
-              </p>
             </Panel>
 
             <ButtonLink variant="secondary" size="sm" to="/area">
