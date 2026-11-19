@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FileText, LayoutGrid, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import ConfirmDialog from "./ui/ConfirmDialog";
 import { useAuth } from "../context/auth";
+import { useDraft } from "../context/draft";
 import { cn } from "../lib/format";
 
 /**
@@ -23,8 +26,14 @@ const ACTIVE = "bg-primary-soft font-bold text-primary";
 export default function BottomNav() {
   const { pathname } = useLocation();
   const { signOut } = useAuth();
+  const { draft, photo, video } = useDraft();
+  const [confirming, setConfirming] = useState(false);
+
+  // Where and when are filled in for them, so only their own input counts.
+  const unsentReport = Boolean(draft.category || draft.details?.trim() || photo || video);
 
   const handleSignOut = () => {
+    setConfirming(false);
     signOut();
     toast("Signed out");
   };
@@ -51,11 +60,33 @@ export default function BottomNav() {
           );
         })}
 
-        <button type="button" onClick={handleSignOut} className={cn(ITEM, IDLE)}>
+        <button
+          type="button"
+          onClick={() => setConfirming(true)}
+          aria-haspopup="dialog"
+          className={cn(ITEM, IDLE)}
+        >
           <LogOut className="size-5" strokeWidth={1.6} aria-hidden />
           <span>Sign out</span>
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirming}
+        title="Sign out?"
+        confirmLabel="Sign out"
+        cancelLabel="Stay signed in"
+        onConfirm={handleSignOut}
+        onCancel={() => setConfirming(false)}
+      >
+        <p>You’re about to sign out of Sentinel Observer on this device.</p>
+        {unsentReport && (
+          <p className="mt-1.5 font-semibold text-destructive">
+            The report you haven’t submitted yet will be discarded.
+          </p>
+        )}
+        <p className="mt-1.5">You’ll need your email and password to sign back in.</p>
+      </ConfirmDialog>
     </nav>
   );
 }

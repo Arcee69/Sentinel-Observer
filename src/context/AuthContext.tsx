@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const completeSignup = useCallback(
-    async (area: AreaSelection) => {
+    async (area: AreaSelection | null) => {
       if (!pendingSignup) throw new Error("Start with your details, then set your area.");
       start(await service.signUp(pendingSignup, area));
     },

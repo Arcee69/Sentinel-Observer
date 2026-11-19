@@ -41,6 +41,7 @@ function mapObserver(observer: ApiObserver): Observer {
   return {
     id: observer.id,
     name: observer.name,
+    email: observer.email ?? "",
     phone: observer.phone,
     areaSetupRequired: observer.area_setup_required,
     stateId: observer.state_id,
@@ -61,34 +62,43 @@ function toSession(result: ApiAuthResult): Session {
   };
 }
 
+/**
+ * The area plus the observer's commitment to responsible reporting — the area
+ * form can't be sent without ticking it, so it travels with every area.
+ */
 function areaPayload(area: AreaSelection) {
   return {
     state_id: area.stateId,
     lga_id: area.lgaId,
     ward_id: area.wardId,
     community: area.community,
+    responsible_reporting_accepted: true,
   };
 }
 
-/** Creates the account and signs it in — observers need no approval. */
-export async function signUp(details: SignupDetails, area: AreaSelection): Promise<Session> {
+/**
+ * Creates the account and signs it in — observers need no approval. The area
+ * is optional: pass `null` when the observer skips it, and they set it through
+ * the profile before their first report.
+ */
+export async function signUp(details: SignupDetails, area: AreaSelection | null): Promise<Session> {
   const { data } = await postMethod<ApiAuthResult>(API.auth.register, {
     name: details.name,
+    email: details.email,
     phone: details.phone,
     password: details.password,
-    // The form has one password field with a show/hide toggle instead of a second box.
+    // Optional for the API. The form has one password field with a show/hide
+    // toggle instead of a second box, so this always matches.
     password_confirmation: details.password,
     device_name: DEVICE_NAME,
-    ...areaPayload(area),
-    // The area form can't be sent without ticking this.
-    responsible_reporting_accepted: true,
+    ...(area ? areaPayload(area) : {}),
   });
   return toSession(data);
 }
 
 export async function login(credentials: Credentials): Promise<Session> {
   const { data } = await postMethod<ApiAuthResult>(API.auth.login, {
-    phone: credentials.phone,
+    email: credentials.email,
     password: credentials.password,
     device_name: DEVICE_NAME,
   });
@@ -105,18 +115,21 @@ export async function logout(token?: string): Promise<void> {
   ).catch(() => undefined);
 }
 
-/** Texts a recovery code. Answers 503 while the SMS provider isn't configured. */
-export async function requestRecovery(phone: string): Promise<void> {
-  await postMethod(API.auth.forgotPassword, { phone });
+/**
+ * Emails a six-digit recovery code, valid for 10 minutes. Answers 503 while
+ * the server has no mail (SMTP) set up.
+ */
+export async function requestRecovery(email: string): Promise<void> {
+  await postMethod(API.auth.forgotPassword, { email });
 }
 
 export async function resetPassword(payload: {
-  phone: string;
+  email: string;
   code: string;
   password: string;
 }): Promise<void> {
   await postMethod(API.auth.resetPassword, {
-    phone: payload.phone,
+    email: payload.email,
     code: payload.code,
     password: payload.password,
     password_confirmation: payload.password,

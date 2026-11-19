@@ -54,6 +54,7 @@ export const REPORTS_PAGE_SIZE = 3;
 
 export const LIMITS = {
   name: 80,
+  email: 255,
   community: 100,
   /** The API's password rule: at least this long, and no more than 72 bytes. */
   passwordMin: 12,

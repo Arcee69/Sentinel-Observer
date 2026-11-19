@@ -40,11 +40,11 @@ Vite dev server) is one of them.
 
 | Route | Screen |
 | --- | --- |
-| `/signup` | Create account, step 1 — name, mobile number, password |
-| `/signup/area` | Create account, step 2 — state, LGA, optional ward and community |
+| `/signup` | Create account, step 1 — name, email, mobile number, password |
+| `/signup/area` | Create account, step 2 — state, LGA, optional ward and community, or skip |
 | `/login` | Sign in |
-| `/forgot-password` | Password recovery, step 1 — request a code by text |
-| `/reset-password` | Password recovery, step 2 — the code and a new password |
+| `/forgot-password` | Password recovery, step 1 — request a code by email |
+| `/reset-password` | Password recovery, step 2 — the six-digit code and a new password |
 | `/app` | Dashboard — counts by status, most recent report |
 | `/reports` | My reports — filter and page are in the URL (`?status=&page=`) |
 | `/reports/new` | Report wizard — activity → details → evidence → review (`?step=`) |
@@ -69,9 +69,18 @@ the device — or the link ends in `#login` — the app opens on **Sign in**.
   reopens on the dashboard; the password is never stored. The profile is
   re-read from `/observer/me` when the API is reachable. A rejected token
   clears the session and returns to Sign in.
-- **Sign-up.** Step 1 collects name, number and password and holds them in
-  memory; step 2 picks the area and creates the account in one call. A number
-  already in use sends the observer back to step 1 with the API's message.
+- **Sign-up and sign-in.** Observers sign in with their **email** and password.
+  Sign-up step 1 collects name, email, mobile number and password and holds
+  them in memory; step 2 picks the area and creates the account in one call.
+  **Skip for now** creates the account without an area; the dashboard then
+  reminds the observer to set one, and the report wizard sends them to set it
+  first and back again. An email or number already in use sends the observer
+  back to step 1 with the API's message.
+- **Password recovery.** A six-digit code is emailed (valid for 10 minutes)
+  and entered on `/reset-password` with the new password. It needs mail (SMTP)
+  configured on the server; until then `/observer/metadata` reports
+  `email_recovery_available: false` and the screen says recovery is
+  unavailable.
 - **Areas.** States, LGAs and wards come from `/observer/areas`, each list
   being the children of the choice above it
   ([`useAreas.ts`](src/hooks/useAreas.ts)). Names arrive in capitals and are

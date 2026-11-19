@@ -30,6 +30,15 @@ export default function Home() {
         </ButtonLink>
       </header>
 
+      {observer.areaSetupRequired && (
+        <Note className="mb-3.5 items-center">
+          <span className="block">Set your area so you can start filing reports.</span>
+          <ButtonLink variant="text" size="md" to="/area/edit" state={{ returnTo: "/app" }}>
+            Set my area →
+          </ButtonLink>
+        </Note>
+      )}
+
       {isPending ? (
         <div className="my-3.5 grid grid-cols-2 gap-2" aria-busy="true" aria-label="Loading your reports">
           {Array.from({ length: 4 }, (_, index) => (

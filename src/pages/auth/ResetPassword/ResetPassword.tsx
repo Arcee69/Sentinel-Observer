@@ -3,21 +3,24 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "sonner";
-import PhoneField from "../../../components/PhoneField";
+import EmailField from "../../../components/EmailField";
 import Button, { ButtonLink } from "../../../components/ui/Button";
 import { PasswordField, TextField } from "../../../components/ui/Field";
 import { Eyebrow, Lead, Title } from "../../../components/ui/Typography";
 import { errorMessage } from "../../../services/instance";
 import * as service from "../../../services/observerService";
-import { PASSWORD_HINT, passwordSchema, phoneSchema } from "../../../lib/validation";
+import { emailSchema, PASSWORD_HINT, passwordSchema } from "../../../lib/validation";
 
 const schema = Yup.object({
-  phone: phoneSchema,
-  code: Yup.string().trim().required("Enter the code we texted you"),
+  email: emailSchema,
+  code: Yup.string()
+    .trim()
+    .required("Enter the code we emailed you")
+    .matches(/^\d{6}$/, "The code is six digits"),
   password: passwordSchema,
 });
 
-/** Step two of recovery: the texted code and a new password. */
+/** Step two of recovery: the emailed code and a new password. */
 export default function ResetPassword() {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -26,7 +29,7 @@ export default function ResetPassword() {
   const formik = useFormik({
     initialValues: {
       // Carried over from the recovery request, when they came from there.
-      phone: (state as { phone?: string } | null)?.phone ?? "",
+      email: (state as { email?: string } | null)?.email ?? "",
       code: "",
       password: "",
     },
@@ -34,7 +37,11 @@ export default function ResetPassword() {
     onSubmit: async (values) => {
       setFormError(null);
       try {
-        await service.resetPassword({ ...values, code: values.code.trim() });
+        await service.resetPassword({
+          email: values.email.trim(),
+          code: values.code.trim(),
+          password: values.password,
+        });
         toast.success("Password changed. Sign in with your new password.");
         navigate("/login", { replace: true });
       } catch (error) {
@@ -43,21 +50,21 @@ export default function ResetPassword() {
     },
   });
 
-  const fieldError = (name: "phone" | "code" | "password") =>
+  const fieldError = (name: "email" | "code" | "password") =>
     formik.touched[name] ? formik.errors[name] : undefined;
 
   return (
     <>
       <Eyebrow>Account recovery</Eyebrow>
       <Title>Choose a new password</Title>
-      <Lead>Enter the recovery code we texted you, then pick a new password.</Lead>
+      <Lead>Enter the six-digit code we emailed you, then pick a new password.</Lead>
 
       <form onSubmit={formik.handleSubmit} noValidate>
-        <PhoneField
-          value={formik.values.phone}
-          onValueChange={(phone) => void formik.setFieldValue("phone", phone)}
+        <EmailField
+          value={formik.values.email}
+          onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          error={fieldError("phone")}
+          error={fieldError("email")}
         />
 
         <TextField
@@ -65,7 +72,9 @@ export default function ResetPassword() {
           name="code"
           inputMode="numeric"
           autoComplete="one-time-code"
-          placeholder="The code from your text message"
+          maxLength={6}
+          placeholder="6-digit code"
+          hint="Codes expire after 10 minutes."
           value={formik.values.code}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}

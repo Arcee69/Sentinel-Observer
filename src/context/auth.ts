@@ -9,8 +9,8 @@ export interface AuthValue {
   /** Step one of sign-up, kept in memory while the observer sets their area. */
   pendingSignup: SignupDetails | null;
   beginSignup: (details: SignupDetails) => void;
-  /** Creates the account from step one plus the area, and signs it in. */
-  completeSignup: (area: AreaSelection) => Promise<void>;
+  /** Creates the account from step one plus the area (`null` to skip it), and signs it in. */
+  completeSignup: (area: AreaSelection | null) => Promise<void>;
   signIn: (credentials: Credentials) => Promise<void>;
   signOut: () => void;
   updateArea: (area: AreaSelection) => Promise<void>;

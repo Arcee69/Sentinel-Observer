@@ -19,6 +19,8 @@ export interface ObserverArea {
 export interface Observer extends ObserverArea {
   id: string;
   name: string;
+  /** Signs in with this; recovery codes go here too. */
+  email: string;
   /** As the API normalises it: +234… */
   phone: string;
   /** The account has no area yet; the API won't take reports until it does. */
@@ -45,12 +47,13 @@ export interface Place {
  */
 export interface SignupDetails {
   name: string;
+  email: string;
   phone: string;
   password: string;
 }
 
 export interface Credentials {
-  phone: string;
+  email: string;
   password: string;
 }
 
@@ -148,6 +151,8 @@ export interface VideoAttachment extends PhotoAttachment {
 export interface ApiObserver {
   id: string;
   name: string;
+  /** Absent on accounts created before sign-in moved to email. */
+  email?: string | null;
   phone: string;
   role: string;
   status: string;
@@ -192,6 +197,10 @@ export interface ApiMetadata {
   photo_max_bytes: number;
   video_max_bytes: number;
   video_max_seconds: number;
+  /** Where recovery codes are sent. */
+  password_recovery_channel: "email" | "sms";
+  /** False while the server has no mail (SMTP) set up; recovery requests then answer 503. */
+  email_recovery_available: boolean;
   sms_recovery_available: boolean;
 }
 

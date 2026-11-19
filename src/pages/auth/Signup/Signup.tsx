@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import AuthTabs from "../../../components/AuthTabs";
+import EmailField from "../../../components/EmailField";
 import PhoneField from "../../../components/PhoneField";
 import Button from "../../../components/ui/Button";
 import { PasswordField, TextField } from "../../../components/ui/Field";
@@ -9,10 +10,11 @@ import Note from "../../../components/ui/Note";
 import { Eyebrow, Lead, Title } from "../../../components/ui/Typography";
 import { useAuth } from "../../../context/auth";
 import { LIMITS } from "../../../lib/constants";
-import { PASSWORD_HINT, passwordSchema, phoneSchema } from "../../../lib/validation";
+import { emailSchema, PASSWORD_HINT, passwordSchema, phoneSchema } from "../../../lib/validation";
 
 const schema = Yup.object({
   name: Yup.string().trim().required("Please enter your name.").max(LIMITS.name),
+  email: emailSchema,
   phone: phoneSchema,
   password: passwordSchema,
 });
@@ -26,18 +28,24 @@ export default function Signup() {
     // Coming back from the area step restores the details, never the password.
     initialValues: {
       name: pendingSignup?.name ?? "",
+      email: pendingSignup?.email ?? "",
       phone: pendingSignup?.phone ?? "",
       password: "",
     },
     validationSchema: schema,
     onSubmit: (values) => {
       // Held in memory only: the area step sends it with the rest of the account.
-      beginSignup({ name: values.name.trim(), phone: values.phone, password: values.password });
+      beginSignup({
+        name: values.name.trim(),
+        email: values.email.trim(),
+        phone: values.phone,
+        password: values.password,
+      });
       navigate("/signup/area");
     },
   });
 
-  const fieldError = (name: "name" | "phone" | "password") =>
+  const fieldError = (name: "name" | "email" | "phone" | "password") =>
     formik.touched[name] ? formik.errors[name] : undefined;
 
   return (
@@ -59,6 +67,14 @@ export default function Signup() {
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           error={fieldError("name")}
+        />
+
+        <EmailField
+          hint="You'll sign in with this. Recovery codes are sent here too."
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={fieldError("email")}
         />
 
         <PhoneField

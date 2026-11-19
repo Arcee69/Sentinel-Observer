@@ -27,7 +27,9 @@ export default function NewReport() {
   const observer = useObserver();
 
   // The API takes reports only from observers who have set their area.
-  if (observer.areaSetupRequired) return <Navigate to="/area/edit" replace />;
+  if (observer.areaSetupRequired) {
+    return <Navigate to="/area/edit" replace state={{ returnTo: "/reports/new" }} />;
+  }
 
   // A deep link or a stale history entry can't skip past unanswered steps.
   const requested = Math.trunc(Number(searchParams.get("step"))) || 1;

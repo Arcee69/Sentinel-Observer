@@ -3,17 +3,17 @@ import { useFormik } from "formik";
 import { useSearchParams } from "react-router-dom";
 import * as Yup from "yup";
 import AuthTabs from "../../../components/AuthTabs";
-import PhoneField from "../../../components/PhoneField";
+import EmailField from "../../../components/EmailField";
 import Button, { ButtonLink } from "../../../components/ui/Button";
 import { PasswordField } from "../../../components/ui/Field";
 import Note from "../../../components/ui/Note";
 import { Eyebrow, Lead, Title } from "../../../components/ui/Typography";
 import { useAuth } from "../../../context/auth";
 import { errorMessage } from "../../../services/instance";
-import { phoneSchema } from "../../../lib/validation";
+import { emailSchema } from "../../../lib/validation";
 
 const schema = Yup.object({
-  phone: phoneSchema,
+  email: emailSchema,
   password: Yup.string().required("Enter your password"),
 });
 
@@ -26,20 +26,20 @@ export default function Login() {
   );
 
   const formik = useFormik({
-    initialValues: { phone: "", password: "" },
+    initialValues: { email: "", password: "" },
     validationSchema: schema,
     onSubmit: async (values) => {
       setFormError(null);
       try {
         // Signing in flips the public-only gate, which opens the dashboard.
-        await signIn(values);
+        await signIn({ email: values.email.trim(), password: values.password });
       } catch (error) {
         setFormError(errorMessage(error, "We couldn't sign you in. Try again."));
       }
     },
   });
 
-  const fieldError = (name: "phone" | "password") =>
+  const fieldError = (name: "email" | "password") =>
     formik.touched[name] ? formik.errors[name] : undefined;
 
   return (
@@ -51,11 +51,11 @@ export default function Login() {
       <Lead>Sign in to report an activity or follow up on your observations.</Lead>
 
       <form onSubmit={formik.handleSubmit} noValidate>
-        <PhoneField
-          value={formik.values.phone}
-          onValueChange={(phone) => void formik.setFieldValue("phone", phone)}
+        <EmailField
+          value={formik.values.email}
+          onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          error={fieldError("phone")}
+          error={fieldError("email")}
         />
 
         <PasswordField

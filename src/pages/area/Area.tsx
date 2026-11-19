@@ -34,16 +34,19 @@ export default function Area() {
         <div className="rounded-card border border-sage-border bg-sage p-3.5">
           <Eyebrow tone="sage">Your observation area</Eyebrow>
           <strong className="mt-2 mb-1 block text-base wrap-anywhere text-sage-foreground">
-            {observer.lga || "Your local area"}
-            {observer.state && `, ${observer.state}`}
+            {observer.areaSetupRequired
+              ? "No area set yet"
+              : `${observer.lga}${observer.state ? `, ${observer.state}` : ""}`}
           </strong>
           <small className="block text-[11px] text-sage-muted">
-            {[observer.community, observer.ward].filter(Boolean).join(", ") ||
-              "Add your ward or community to report faster."}
+            {observer.areaSetupRequired
+              ? "Set your area before you file your first report."
+              : [observer.community, observer.ward].filter(Boolean).join(", ") ||
+                "Add your ward or community to report faster."}
           </small>
           <ButtonLink variant="text" to="/area/edit" className="mt-1.75">
             <MapPin className="size-3.25" strokeWidth={1.6} aria-hidden />
-            Change area
+            {observer.areaSetupRequired ? "Set your area" : "Change area"}
           </ButtonLink>
         </div>
 

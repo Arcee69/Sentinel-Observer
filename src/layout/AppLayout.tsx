@@ -15,12 +15,12 @@ export default function AppLayout() {
       <InstallPrompt />
       <BrandHeader />
 
-      {/* Above the screens so a report in progress survives moving between them. */}
+      {/* Above the screens so a report in progress survives moving between them,
+          and above the nav so signing out can tell whether one would be lost. */}
       <DraftProvider>
         <Screen />
+        <BottomNav />
       </DraftProvider>
-
-      <BottomNav />
     </PhoneFrame>
   );
 }

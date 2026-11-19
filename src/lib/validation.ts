@@ -25,6 +25,13 @@ export const passwordSchema = Yup.string()
 
 export const PASSWORD_HINT = `At least ${LIMITS.passwordMin} characters, with upper and lower case, a number and a symbol.`;
 
+/** The account's sign-in name. Surrounding spaces from autofill are dropped. */
+export const emailSchema = Yup.string()
+  .trim()
+  .required("Enter your email address")
+  .email("Enter a valid email address, like you@example.com")
+  .max(LIMITS.email);
+
 export const phoneSchema = Yup.string()
   .required("Enter your mobile number")
   .matches(PHONE_PATTERN, "Enter a Nigerian number: 11 digits, or use +234.");

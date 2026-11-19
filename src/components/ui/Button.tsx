@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import { Link, type LinkProps } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { cn } from "../../lib/format";
@@ -56,6 +56,7 @@ function buttonClass({ variant = "primary", size = "md", className }: StyleProps
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, StyleProps {
   loading?: boolean;
   icon?: ReactNode;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /** Primary and secondary buttons fill their row; text buttons hug their label. */
